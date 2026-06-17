@@ -155,7 +155,7 @@
     <div class="particles" id="particles"></div>
 
     <div class="logo-wrap">
-      <canvas id="mascot" width="160" height="160" style="image-rendering:pixelated;animation:breathe 3s ease-in-out infinite;filter:drop-shadow(0 0 18px #cc785c99)"></canvas>
+      <canvas id="mascot" width="160" height="160" style="image-rendering:pixelated;animation:breathe 3s ease-in-out infinite;filter:drop-shadow(0 0 22px #cc785cbb)"></canvas>
     </div>
 
     <div class="label">
@@ -164,58 +164,74 @@
   </div>
 
   <script>
+    // ── Clawd – pixel crab mascot ──
     const canvas = document.getElementById('mascot');
     const ctx = canvas.getContext('2d');
-    const S = 8;
+
+    const S  = 9;
+    const OX = 8;
+    const OY = 35;
 
     const _ = null;
     const O = '#cc785c';
     const L = '#e8a87c';
     const D = '#a05535';
-    const W = '#ffffff';
     const B = '#1a1a22';
-    const P = '#ffd4b8';
+    const W = '#ffffff';
 
-    const sprite = [
-      [_,_,_,_,_,O,_,_,_,_,O,_,_,_,_,_],
-      [_,_,_,_,_,O,_,_,_,_,O,_,_,_,_,_],
+    const body = [
       [_,_,_,_,O,O,_,_,_,_,O,O,_,_,_,_],
-      [_,_,O,O,O,O,O,O,O,O,O,O,O,O,_,_],
-      [_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_],
-      [_,O,O,B,B,O,O,O,O,O,O,B,B,O,O,_],
-      [_,O,O,B,W,O,O,O,O,O,O,B,W,O,O,_],
-      [_,O,O,O,O,O,O,O,O,O,O,O,O,O,O,_],
-      [_,O,P,O,O,D,O,O,O,O,D,O,O,P,O,_],
-      [_,O,O,O,O,O,D,D,D,D,O,O,O,O,O,_],
-      [_,_,O,O,O,O,O,O,O,O,O,O,O,O,_,_],
-      [_,_,_,L,L,L,L,L,L,L,L,L,L,_,_,_],
-      [_,O,_,L,L,L,L,L,L,L,L,L,L,_,O,_],
-      [O,O,_,L,L,L,L,L,L,L,L,L,L,_,O,O],
-      [O,O,_,_,O,O,O,O,O,O,O,O,_,_,O,O],
-      [_,O,_,_,O,O,O,O,O,O,O,O,_,_,O,_],
-      [_,_,_,_,O,O,_,_,_,_,O,O,_,_,_,_],
-      [_,_,_,_,O,O,_,_,_,_,O,O,_,_,_,_],
-      [_,_,_,D,D,D,_,_,_,_,D,D,D,_,_,_],
-      [_,_,_,D,D,D,_,_,_,_,D,D,D,_,_,_],
+      [_,_,_,O,O,O,O,_,_,O,O,O,O,_,_,_],
+      [_,_,_,O,B,W,O,_,_,O,B,W,O,_,_,_],
+      [D,O,D,_,D,O,O,O,O,O,O,D,_,D,O,D],
+      [O,O,O,D,O,L,L,L,L,L,L,O,D,O,O,O],
+      [O,O,O,D,O,L,L,L,L,L,L,O,D,O,O,O],
+      [D,O,D,_,D,O,O,O,O,O,O,D,_,D,O,D],
     ];
 
-    function drawSprite(frame) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const blink = (frame % 180 < 4);
-      sprite.forEach((row, y) => {
-        row.forEach((color, x) => {
-          if (!color) return;
-          let c = color;
-          if (blink && y === 5 && (x === 3 || x === 4 || x === 11 || x === 12)) c = O;
-          if (blink && y === 6 && (x === 3 || x === 4 || x === 11 || x === 12)) c = O;
-          ctx.fillStyle = c;
-          ctx.fillRect(x * S + 8, y * S + 8, S, S);
-        });
+    const legsA = [
+      [_,_,_,_,D,O,_,_,_,_,O,D,_,_,_,_],
+      [_,_,_,D,O,_,_,_,_,_,_,O,D,_,_,_],
+      [_,_,D,O,_,_,_,_,_,_,_,_,O,D,_,_],
+    ];
+    const legsB = [
+      [_,_,_,_,_,D,O,_,_,O,D,_,_,_,_,_],
+      [_,_,_,_,D,O,_,_,_,_,O,D,_,_,_,_],
+      [_,_,_,D,O,_,_,_,_,_,_,O,D,_,_,_],
+    ];
+
+    const blinkRow = [_,_,_,O,D,D,O,_,_,O,D,D,O,_,_,_];
+    const waveR1   = [D,O,_,O,O,O,O,_,_,O,O,O,O,_,O,D];
+    const waveR2   = [O,O,_,O,B,W,O,_,_,O,B,W,O,_,O,O];
+    const waveR6   = [_,_,_,_,D,O,O,O,O,O,O,D,_,_,_,_];
+
+    function buildFrame(f) {
+      const blink  = f % 200 < 5;
+      const waving = f % 200 >= 100 && f % 200 < 118;
+      const legs   = Math.floor(f / 22) % 2 === 0 ? legsA : legsB;
+      const rows = body.map((row, y) => {
+        if (y === 2 && blink)  return blinkRow;
+        if (y === 1 && waving) return waveR1;
+        if (y === 2 && waving) return waveR2;
+        if (y === 6 && waving) return waveR6;
+        return row;
       });
+      return [...rows, ...legs];
+    }
+
+    function drawMascot(f) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      buildFrame(f).forEach((row, y) =>
+        row.forEach((c, x) => {
+          if (!c) return;
+          ctx.fillStyle = c;
+          ctx.fillRect(OX + x * S, OY + y * S, S, S);
+        })
+      );
     }
 
     let frame = 0;
-    function animateMascot() { drawSprite(frame++); requestAnimationFrame(animateMascot); }
+    function animateMascot() { drawMascot(frame++); requestAnimationFrame(animateMascot); }
     animateMascot();
 
     const container = document.getElementById('particles');
